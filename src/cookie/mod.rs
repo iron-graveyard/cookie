@@ -3,6 +3,7 @@
 use rustc::util::sha2::{Sha256, Digest};
 use std::collections::hashmap::HashMap;
 use serialize::json::{Json, Null};
+use serialize::hex::ToHex;
 
 /// The parsed cookie.
 ///
@@ -39,22 +40,8 @@ impl Cookie {
                 sha.input_str(secret.as_slice());
                 sha.input_str(value.as_slice());
 
-                let hash = sha.result_str();
-
-                // Purge hash of forbidden characters
-                let mut signature = vec![];
-                for &c in hash.as_bytes().iter() {
-                    match c {
-                        b'$'|b'='|b';'|b' '|b'\r'|b'\t'|b'\n' => (),
-                        _ => signature.push(c)
-                    }
-                }
-
-                // Return the encoded signature, if successful/available
-                match ::std::str::from_utf8(signature.as_slice()) {
-                    Some(sig) => Some(sig.to_string()),
-                    None      => None
-                }
+                let hash = sha.result_bytes();
+                Some(hash.as_slice().to_hex())
             },
             None             => None
         }

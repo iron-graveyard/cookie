@@ -1,6 +1,7 @@
 //! Parsing functionality - get cookie data
 
 use std::collections::hashmap::HashMap;
+use url;
 use serialize::json;
 use serialize::json::{Object, Null};
 use iron::{Request, Response, Middleware, Alloy};
@@ -49,9 +50,20 @@ impl Middleware for CookieParser {
                 let mut map: HashMap<String, String> =
                     cookie.as_slice().split(';').map(|substr| {
                         let vec: Vec<&str> = substr.splitn('=', 1).collect();
-                        (if vec.get(0)[0] == b' ' { vec.get(0).slice_from(1).to_string() }
-                            else { vec.get(0).to_string() },
-                         if vec.len() == 1 { "".to_string() } else { vec.get(1).to_string() })
+                        (url::decode_component((*vec.get(0)).chars().skip_while(|c| {
+                            match *c {
+                                ' '|'\r'|'\t'|'\n' => true,
+                                _                  => false
+                            }
+                         }).collect::<String>().as_slice()),
+                         if vec.len() == 1 { "".to_string() } else {
+                            url::decode_component((*vec.get(1)).chars().skip_while(|c| {
+                                match *c {
+                                    ' '|'\r'|'\t'|'\n' => true,
+                                    _                  => false
+                                } 
+                            }).collect::<String>().as_slice())
+                         })
                     }).collect();
 
                 match self.secret {

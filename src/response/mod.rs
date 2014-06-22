@@ -1,6 +1,7 @@
 //! Setting functionality - set cookie data
 
 use std::collections::HashMap;
+use url;
 use serialize::json::{Json, Number, String, Boolean, List, Object, Null};
 use iron::Response;
 use super::Cookie;
@@ -16,9 +17,9 @@ pub trait SetCookie {
     /// Only one cookie may sent per response, with the given key/value.
     /// Doing otherwise will result in ***undefined behavior***.
     ///
-    /// Keys/values may not contain restricted characters:
-    ///     `$`, `=`, `;`, and whitespace
-    /// If any of these are included in the cookie, _the program will fail_.
+    /// Keys/values may contain restricted characters, but they will be URI encoded in the cookie.
+    ///
+    /// They will be decoded when the cookie is returned to the server.
     ///
     /// Cookies ***must*** be set before the response body is sent.
     /// Headers are flushed as soon anything is sent in the response body.
@@ -29,22 +30,14 @@ pub trait SetCookie {
     /// Cookies set as JSON will be available under `cookie.json`.
     /// Otherwise, they behave exactly as normally serialized cookies.
     ///
-    /// Note that the same restricted characters apply:
-    ///     `$`, `=`, `;`, and whitespace
-    /// If any of these are included in the cookie, _the program will fail_.
+    /// Note that restricted characters will still be URI encoded in your cookie.
+    ///
+    /// They will be decoded when the cookie is returned to the server.
     fn set_json_cookie(&mut self, &Cookie, (String, Json), &HashMap<String, Option<String>>);
 }
 
 impl<'a> SetCookie for Response<'a> {
     fn set_cookie(&mut self, signer: &Cookie, (key, value): (String, String), options: &HashMap<String, Option<String>>) {
-        // Err on forbidden characters
-        for &c in value.as_bytes().iter() {
-            match c {
-                b'$'|b'='|b';'|b' '|b'\r'|b'\t'|b'\n' => fail!("Use of invalid character in cookie."),
-                _                                     => ()
-            }
-        }
-
         let mut opt = vec![]; // Avoid worrying about String moves
         for (key, value) in options.iter() {
             opt.push(key.as_slice());
@@ -64,15 +57,17 @@ impl<'a> SetCookie for Response<'a> {
         self.headers.extensions.insert("Set-Cookie".to_string(),
             match signer.sign(&value) {
                 Some(signature) => {
-                    key.append("=")
+                    url::encode_component(key.as_slice())
+                        .append("=")
                         .append("s:")
-                        .append(value.as_slice())
+                        .append(url::encode_component(value.as_slice()).as_slice())
                         .append(".")
                         .append(signature.as_slice())
                 },
                 None            => {
-                    key.append("=")
-                        .append(value.as_slice())
+                    url::encode_component(key.as_slice())
+                        .append("=")
+                        .append(url::encode_component(value.as_slice()).as_slice())
                 }
             }.append(opt.concat().as_slice())
         );
