@@ -1,6 +1,8 @@
 //! Parsing functionality - get cookie data
 
 use std::collections::hashmap::HashMap;
+use serialize::json;
+use serialize::json::{Object, Null};
 use iron::{Request, Response, Middleware, Alloy};
 use iron::middleware::{Status, Continue};
 use super::Cookie;
@@ -40,6 +42,8 @@ impl Middleware for CookieParser {
     /// This will parse the body of a cookie into the alloy, under type `Cookie`.
     fn enter(&mut self, req: &mut Request, _res: &mut Response, alloy: &mut Alloy) -> Status {
         let mut parsed_cookie = Cookie::new(self.secret.clone());
+        // kudos to @Blei for rustic JSON tips
+        let mut parsed_json = json::from_str("{}").unwrap();
         match req.headers.extensions.find_mut(&"Cookie".to_string()) {
             Some(cookie) => {
                 let mut map: HashMap<String, String> =
@@ -83,7 +87,24 @@ impl Middleware for CookieParser {
                     },
                     None         => ()
                 }
+
+                for (token, value) in map.mut_iter() {
+                    if value.len() > 2 && value.as_slice().slice(0, 2) == "j:" {
+                        match parsed_json {
+                            Object(ref mut root) => {
+                                root.insert(token.clone(), 
+                                    match json::from_str(value.as_slice().slice_from(2)) {
+                                        Ok(obj) => obj,
+                                        Err(_)  => Null
+                                    });
+                            },
+                            _                    => {}
+                        }
+                    }
+                }
+
                 parsed_cookie.map = map;
+                parsed_cookie.json = parsed_json;
                 alloy.insert(parsed_cookie);
             },
             None => { alloy.insert(parsed_cookie); }

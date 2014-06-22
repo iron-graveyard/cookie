@@ -7,6 +7,7 @@
 extern crate rustc;
 extern crate regex;
 #[phase(plugin)] extern crate regex_macros;
+extern crate serialize;
 extern crate iron;
 extern crate http;
 

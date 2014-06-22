@@ -2,6 +2,7 @@
 
 use rustc::util::sha2::{Sha256, Digest};
 use std::collections::hashmap::HashMap;
+use serialize::json::{Json, Null};
 
 /// The parsed cookie.
 ///
@@ -11,14 +12,21 @@ pub struct Cookie {
     secret: Option<String>,
     /// The parsed RFC 6265-styled cookies.
     pub map: HashMap<String, String>,
-    // json: Json TODO
-    // options:   TODO
+    /// Any JSON fields, parsed into a single object
+    ///
+    /// JSON stored under key `myJson` will be available
+    /// under `cookie.json.find(&"myJson".to_string())`.
+    pub json: Json
 }
 
 impl Cookie {
     /// Create a new cookie
     pub fn new(secret: Option<String>) -> Cookie {
-        Cookie { map: HashMap::<String, String>::new(), secret: secret }
+        Cookie {
+            secret: secret,
+            map: HashMap::new(),
+            json: Null
+        }
     }
 
     /// Encode your signature
