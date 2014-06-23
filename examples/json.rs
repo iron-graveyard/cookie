@@ -5,19 +5,17 @@ extern crate iron;
 extern crate cookie;
 extern crate serialize;
 
-use std::collections::HashMap;
 use std::io::net::ip::Ipv4Addr;
 use serialize::json::Number;
 use http::status::Ok;
 use iron::{Iron, ServerT, Request, Response, Alloy};
 use iron::middleware::{Status, Continue};
 use iron::mixin::Serve;
-use cookie::{CookieParser, Cookie, SetCookie};
+use cookie::{CookieParser, Cookie, SetCookie, HeaderCollection};
 
 fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Status {
     // Only hold on to cookies for ten seconds
-    let mut options = HashMap::new();
-    options.insert("Max-Age".to_string(), Some("10".to_string()));
+    let options = HeaderCollection::aged(10);
 
     match alloy.find::<Cookie>() {
         Some(cookie) => {
@@ -31,12 +29,12 @@ fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Sta
                     let count = (cnt).to_str().clone();
                     println!("COOKIE COUNT: {}", count)
                     // Override the cookie with a new value
-                    res.set_json_cookie(cookie, ("count".to_string(), Number(cnt)), &options);
+                    res.set_json_cookie(cookie, ("count".to_string(), Number(cnt)), options);
                     let _ = res.serve(Ok, format!("Hit Counter: {}", count).as_slice());
                 },
                 _       => {
                     // Initialize our cookie counter
-                    res.set_json_cookie(cookie, ("count".to_string(), Number(1f64)), &options);
+                    res.set_json_cookie(cookie, ("count".to_string(), Number(1f64)), options);
                     let _ = res.serve(Ok, format!("Hit Counter: {}", 1f64).as_slice());
                 }
             }

@@ -4,6 +4,7 @@
 
 //! Cookie parsing/setting middleware for the [iron](https://github.com/iron/iron) framework.
 
+extern crate time;
 extern crate rustc;
 extern crate regex;
 #[phase(plugin)] extern crate regex_macros;
@@ -16,6 +17,7 @@ extern crate openssl;
 pub use parser::CookieParser;
 pub use response::SetCookie;
 pub use cookie::Cookie;
+pub use response::headers::HeaderCollection;
 
 pub mod parser;
 pub mod response;

@@ -1,10 +1,12 @@
 //! Setting functionality - set cookie data
 
-use std::collections::HashMap;
 use url;
 use serialize::json::{Json, Number, String, Boolean, List, Object, Null};
 use iron::Response;
 use super::Cookie;
+use self::headers::HeaderCollection;
+
+pub mod headers;
 
 /// Set cookies.
 ///
@@ -23,7 +25,7 @@ pub trait SetCookie {
     ///
     /// Cookies ***must*** be set before the response body is sent.
     /// Headers are flushed as soon anything is sent in the response body.
-    fn set_cookie(&mut self, &Cookie, (String, String), &HashMap<String, Option<String>>);
+    fn set_cookie(&mut self, &Cookie, (String, String), HeaderCollection);
 
     /// Set a cookie as JSON.
     ///
@@ -33,26 +35,14 @@ pub trait SetCookie {
     /// Note that restricted characters will still be URI encoded in your cookie.
     ///
     /// They will be decoded when the cookie is returned to the server.
-    fn set_json_cookie(&mut self, &Cookie, (String, Json), &HashMap<String, Option<String>>);
+    fn set_json_cookie(&mut self, &Cookie, (String, Json), HeaderCollection);
 }
 
 impl<'a> SetCookie for Response<'a> {
-    fn set_cookie(&mut self, signer: &Cookie, (key, value): (String, String), options: &HashMap<String, Option<String>>) {
-        let mut opt = vec![]; // Avoid worrying about String moves
-        for (key, value) in options.iter() {
-            opt.push(key.as_slice());
-            match *value {
-                Some(ref val) => {
-                    opt.push("=");
-                    opt.push(val.as_slice());
-                },
-                None => (),
-            }
-            opt.push("; ");
-        }
-        // These need to be here so the compiler can correctly determine (key, value)'s lifetime
-        opt.unshift("; ");
-        opt.pop();
+    fn set_cookie(&mut self,
+                  signer: &Cookie,
+                  (key, value): (String, String),
+                  options: HeaderCollection) {
 
         self.headers.extensions.insert("Set-Cookie".to_string(),
             match signer.sign(&value) {
@@ -69,14 +59,14 @@ impl<'a> SetCookie for Response<'a> {
                         .append("=")
                         .append(url::encode_component(value.as_slice()).as_slice())
                 }
-            }.append(opt.concat().as_slice())
+            }.append(options.to_cookie_av().as_slice())
         );
     }
 
     fn set_json_cookie(&mut self,
                        signer: &Cookie,
                        (key, value): (String, Json),
-                       options: &HashMap<String, Option<String>>) {
+                       options: HeaderCollection) {
         let json = "j:".to_string().append(stringify_json(&value).as_slice());
         self.set_cookie(signer, (key, json), options)
     }
