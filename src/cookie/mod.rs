@@ -1,9 +1,9 @@
 //! Parsing functionality - get cookie data
 
-use rustc::util::sha2::{Sha256, Digest};
 use std::collections::hashmap::HashMap;
 use serialize::json::{Json, Null};
 use serialize::hex::ToHex;
+use openssl::crypto::hash::{Hasher, SHA256};
 
 /// The parsed cookie.
 ///
@@ -36,11 +36,11 @@ impl Cookie {
     pub fn sign(&self, value: &String) -> Option<String> {
         match self.secret {
             Some(ref secret) => {
-                let mut sha = Sha256::new();
-                sha.input_str(secret.as_slice());
-                sha.input_str(value.as_slice());
+                let sha = Hasher::new(SHA256);
+                sha.update(secret.as_bytes());
+                sha.update(value.as_bytes());
 
-                let hash = sha.result_bytes();
+                let hash = sha.final();
                 Some(hash.as_slice().to_hex())
             },
             None             => None
