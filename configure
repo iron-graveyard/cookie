@@ -38,10 +38,10 @@ fi
   make $4
   cd ../..
 # Prepare folder structure dependency targets
-  mkdir -p target/$TARGET/lib
+  mkdir -p target/deps
 # Copy dependency targets
 # (symlinking does not work on OS X)
-  cp deps/$2$3/* target/$TARGET/lib/
+  cp deps/$2$3/* target/deps
 }
 
-updateDependency 'https://github.com/iron/iron.git' 'iron' "/target/$TARGET/lib"
+updateDependency 'https://github.com/sfackler/rust-openssl.git' 'rust-openssl' "/build"
