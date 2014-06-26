@@ -12,7 +12,7 @@ extern crate url;
 extern crate serialize;
 extern crate iron;
 extern crate http;
-extern crate openssl;
+extern crate crypto = "rust-crypto";
 
 pub use parser::CookieParser;
 pub use response::SetCookie;

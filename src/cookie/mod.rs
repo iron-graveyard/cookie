@@ -3,7 +3,8 @@
 use std::collections::hashmap::HashMap;
 use serialize::json::{Json, Null};
 use serialize::hex::ToHex;
-use openssl::crypto::hash::{Hasher, SHA256};
+use crypto::digest::Digest;
+use crypto::sha2::Sha256;
 
 /// The parsed cookie.
 ///
@@ -36,11 +37,12 @@ impl Cookie {
     pub fn sign(&self, value: &String) -> Option<String> {
         match self.secret {
             Some(ref secret) => {
-                let sha = Hasher::new(SHA256);
-                sha.update(secret.as_bytes());
-                sha.update(value.as_bytes());
+                let mut sha = Sha256::new();
+                sha.input(secret.as_bytes());
+                sha.input(value.as_bytes());
 
-                let hash = sha.final();
+                let hash: &mut [u8] = [];
+                sha.result(hash);
                 Some(hash.as_slice().to_hex())
             },
             None             => None

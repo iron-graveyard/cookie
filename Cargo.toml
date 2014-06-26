@@ -5,7 +5,6 @@ version = "0.1.0"
 readme = "README.md"
 authors = ["Zach Pomerantz <zmp@umich.edu>"]
 tags = ["web", "server", "middleware", "iron", "core", "cookie"]
-build = "./configure"
 
 [[lib]]
 
@@ -15,4 +14,8 @@ path = "src/lib.rs"
 [dependencies.iron]
 
 git = "https://github.com/iron/iron.git"
+
+[dependencies.rust-crypto]
+
+git = "https://github.com/DaGenix/rust-crypto.git"
 
