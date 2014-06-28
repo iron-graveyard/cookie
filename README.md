@@ -1,29 +1,55 @@
-middleware-seed [![Build Status](https://secure.travis-ci.org/iron/iron.png?branch=master)](https://travis-ci.org/iron/middleware-seed)
+cookie [![Build Status](https://secure.travis-ci.org/iron/cookie.png?branch=master)](https://travis-ci.org/iron/cookie)
 ====
 
-> A [rust-empty](https://github.com/bvssvni/rust-empty) derived seed to make a simple `Middleware` for the [Iron](https://github.com/iron/iron) framework.
+> Cookie parsing and setting middleware for the [Iron](https://github.com/iron/iron) web framework.
 
-## Getting started
+## Example
 
-```bash
-./configure   # Gets all dependencies and builds them
-make lib      # Build your `Middleware's` crate
-make test     # Build and run tests
-make examples # Build the examples
-make doc      # Build documentation using rustdoc
+```rust
+extern crate iron;
+extern crate http;
+use iron::{Iron, ServerT, Chain, Request, Response, Alloy};
+
+fn main() {
+    let mut server: ServerT = Iron::new();
+    server.chain.link(hello_world); // Add middleware to the server's stack
+    server.listen(::std::io::net::ip::Ipv4Addr(127, 0, 0, 1), 3000);
+}
+
+fn hello_world(_: &mut Request, res: &mut Response, _: &mut Alloy) {
+    res.serve(::http::Ok, "Hello, world!");
+}
 ```
 
-##Usage
+## Overview
 
-1. Create a new empty folder for your project.
-2. Copy this entire seed to the project folder.
-3. Add any extra dependencies in the `configure` file.
- - `Iron` is included for you.
-4. Run `make clean && ./configure` to (re)load your dependencies.
-5. Type `make help`.
+cookie is a part of Iron's [core bundle](https://github.com/iron/core).
+
+- ...
+- ...
+
+## Installation
+
+If you're using a `Cargo` to manage dependencies, just add cookie to the toml:
+
+```toml
+[dependencies.cookie]
+
+git = "https://github.com/iron/cookie.git"
+```
+
+Otherwise, `cargo build`, and the rlib will be in your `target` directory.
+
+## [Documentation](http://docs.ironframework.io/core/cookie)
+
+Along with the [online documentation](http://docs.ironframework.io/core/cookie),
+you can build a local copy with `make doc`.
+
+## [Examples](/examples)
 
 ## Get Help
 
-One of us (@reem, @zzmp, @theptrk, @mcreinhard) is usually on `#iron` on the
-mozilla irc. Come say hi and ask any questions you might have. We are also
-usually on `#rust` and `#rust-webdev`.
+One of us ([@reem](https://github.com/reem/), [@zzmp](https://github.com/zzmp/),
+[@theptrk](https://github.com/theptrk/), [@mcreinhard](https://github.com/mcreinhard))
+is usually on `#iron` on the mozilla irc. Come say hi and ask any questions you might have.
+We are also usually on `#rust` and `#rust-webdev`.
