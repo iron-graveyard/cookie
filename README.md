@@ -6,18 +6,19 @@ cookie [![Build Status](https://secure.travis-ci.org/iron/cookie.png?branch=mast
 ## Example
 
 ```rust
-extern crate iron;
-extern crate http;
-use iron::{Iron, ServerT, Chain, Request, Response, Alloy};
-
 fn main() {
     let mut server: ServerT = Iron::new();
-    server.chain.link(hello_world); // Add middleware to the server's stack
+    server.chain.link(CookieParser::new()));
+    server.chain.link(FromFn::new(echo_cookies));
     server.listen(::std::io::net::ip::Ipv4Addr(127, 0, 0, 1), 3000);
 }
 
-fn hello_world(_: &mut Request, res: &mut Response, _: &mut Alloy) {
-    res.serve(::http::Ok, "Hello, world!");
+fn echo_cookies(_: &mut Request, _: &mut Response, alloy: &mut Alloy) -> Status {
+    let cookie = alloy.find::<Cookie>().unwrap();
+    for (key, value) in cookie.map.iter() {
+        println!("{}:\t{}", *key, *value)
+    }
+    Continue
 }
 ```
 
@@ -25,8 +26,9 @@ fn hello_world(_: &mut Request, res: &mut Response, _: &mut Alloy) {
 
 cookie is a part of Iron's [core bundle](https://github.com/iron/core).
 
-- ...
-- ...
+- Set and parse cookies from the browser
+- Use signed cookies (using SHA-256)
+- Use JSON cookies
 
 ## Installation
 
