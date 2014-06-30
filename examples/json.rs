@@ -9,7 +9,7 @@ use std::io::net::ip::Ipv4Addr;
 use serialize::json::Number;
 use http::status::Ok;
 use iron::{Iron, ServerT, Chain, Request, Response, Alloy};
-use iron::middleware::{Status, Continue};
+use iron::middleware::{Status, Continue, FromFn};
 use iron::mixin::Serve;
 use cookie::{CookieParser, Cookie, SetCookie, HeaderCollection};
 
@@ -47,6 +47,6 @@ fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Sta
 fn main() {
     let mut server: ServerT = Iron::new();
     server.chain.link(CookieParser::signed("@zzmp".to_string()));
-    server.chain.link(count_views);
+    server.chain.link(FromFn::new(count_views));
     server.listen(Ipv4Addr(127, 0, 0, 1), 3000);
 }
