@@ -1,14 +1,14 @@
-pub use std::mem::uninitialized;
-pub use std::collections::TreeMap;
-pub use http::server::response::ResponseWriter;
-pub use http::headers::response::HeaderCollection;
-pub use iron::*;
-pub use super::*;
-pub use super::headers::*;
-pub use super::super::cookie::*;
+use std::mem::uninitialized;
+use std::collections::TreeMap;
+use http::server::response::ResponseWriter;
+use http::headers::response::HeaderCollection;
+use iron::*;
+use super::*;
+use super::headers::*;
+use super::super::cookie::*;
 use serialize::json::{Json, ToJson};
 
-pub fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
+fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
     let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
     let signer = Cookie::new(secret);
     let cookie = (key.to_string(), value.to_string());
@@ -16,7 +16,7 @@ pub fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &s
     res.headers.extensions.find(&"Set-Cookie".to_string()).unwrap().clone()
 }
 
-pub fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: Json) -> String {
+fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: Json) -> String {
     let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
     let signer = Cookie::new(secret);
     let cookie = (key.to_string(), value);
@@ -64,7 +64,6 @@ fn check_signature() {
         "thing=s:thung.2bc9a8b82a4a393ab67b2b8aaff0e3ab33cb4aca05ef4a0ba201141fbb029f42".to_string());
 }
 
-//TO DO
 #[test]
 fn check_json() {
     let headers = HeaderCollection::empty();
