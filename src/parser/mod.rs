@@ -8,6 +8,9 @@ use iron::{Request, Response, Middleware, Alloy};
 use iron::middleware::{Status, Continue};
 use super::Cookie;
 
+#[cfg(test)]
+mod test;
+
 /// The cookie parsing `Middleware`.
 ///
 /// It will parse the body of a cookie into the alloy, under type `Cookie`.
