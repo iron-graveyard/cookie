@@ -7,6 +7,8 @@ use super::Cookie;
 use self::headers::HeaderCollection;
 
 pub mod headers;
+#[cfg(test)]
+mod test;
 
 /// Set cookies.
 ///
