@@ -6,16 +6,18 @@ use super::headers::*;
 use super::super::cookie::*;
 use serialize::json::{Json, Object, String};
 
+// Set a cookie and return its set value
 fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
-    let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
+    let mut res = unsafe { ResponseWriter::new(uninitialized()) };
     let signer = Cookie::new(secret);
     let cookie = (key.to_string(), value.to_string());
     res.set_cookie(&signer, cookie, headers);
     res.headers.extensions.find(&"Set-Cookie".to_string()).unwrap().clone()
 }
 
+// Set a JSON cookie and return its set value
 fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: Json) -> String {
-    let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
+    let mut res = unsafe { ResponseWriter::new(uninitialized()) };
     let signer = Cookie::new(secret);
     let cookie = (key.to_string(), value);
     res.set_json_cookie(&signer, cookie, headers);
@@ -32,13 +34,14 @@ fn check_cookie() {
 fn check_escaping() {
     let headers = HeaderCollection::empty();
     assert_eq!(get_cookie(headers, None, "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'", "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'"),
-        // Url component encoding
+        // Url component encoding should escape these characters
         "~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27=\
          ~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27".to_string());
 }
 
 #[test]
 fn check_headers() {
+    // Mock the cookie headers
     let mut headers = HeaderCollection {
         expires:    None,
         max_age:    Some(42),
@@ -58,7 +61,7 @@ fn check_headers() {
 fn check_signature() {
     let headers = HeaderCollection::empty();
     assert_eq!(get_cookie(headers, Some("@zzmp".to_string()), "thing", "thung"),
-        // Hash of @zzmpthung
+        // Hash of @zzmpthung, the SHA-256 signature of the signed cookie
         "thing=s:thung.2bc9a8b82a4a393ab67b2b8aaff0e3ab33cb4aca05ef4a0ba201141fbb029f42".to_string());
 }
 
@@ -69,6 +72,6 @@ fn check_json() {
     obj_map.insert("foo".to_string(), String("bar".to_string()));
     let json = Object(box obj_map);
     assert_eq!(get_json_cookie(headers, None, "thing", json),
-        // Url component encoded
+        // Url component encoded JSON: {"foo":"bar"}
         "thing=j%3A%7B%22foo%22%3A%22bar%22%7D".to_string());
 }
