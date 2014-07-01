@@ -5,6 +5,8 @@ use serialize::json::{Json, Number, String, Boolean, List, Object, Null};
 use iron::Response;
 use super::Cookie;
 use self::headers::HeaderCollection;
+#[cfg(test)]
+use std::collections::TreeMap;
 
 pub mod headers;
 #[cfg(test)]
@@ -94,4 +96,12 @@ fn stringify_json(json: &Json) -> String {
 
 fn stringify_pair((key, val): (&String, &Json)) -> String {
     "\"".to_string().append(key.as_slice()).append("\":").append(stringify_json(val).as_slice())
+}
+
+#[test]
+fn check_stringify_json() {
+    let mut obj_map = TreeMap::new();
+    obj_map.insert("foo".to_string(), String("bar".to_string()));
+    let json = Object(box obj_map);
+    assert_eq!("{\"foo\":\"bar\"}".to_string(), stringify_json(&json)) // FIXME
 }

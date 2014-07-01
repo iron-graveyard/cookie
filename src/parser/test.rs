@@ -1,10 +1,10 @@
 use std::mem::uninitialized;
-use std::collections::HashMap;
+use std::collections::{HashMap, TreeMap};
 use http::headers::request::HeaderCollection;
 use iron::{Request, Alloy, Middleware};
 use super::*;
 use super::super::cookie::*;
-use serialize::json::ToJson;
+use serialize::json::{Object, String};
 
 fn get_cookie<'a>(secret: Option<String>, cookie: String, alloy: &'a mut Alloy) -> &'a Cookie {
     let mut res = unsafe{ Request{
@@ -63,7 +63,13 @@ fn check_signature() {
 fn check_json() {
     let mut alloy = Alloy::new();
     let cookie = get_cookie(None,
-                            "thing=j%3A%22%7B%22foo%22%3A%22bar%22%7D%22".to_string(),
+                            "thing=j%3A%7B%22foo%22%3A%22bar%22%7D".to_string(),
                             &mut alloy);
-    assert_eq!(cookie.json, "{\"thing\":{\"foo\":\"bar\"}}".to_string().to_json());
+    let mut child_map = TreeMap::new();
+    child_map.insert("foo".to_string(), String("bar".to_string()));
+    let child = Object(box child_map);
+    let mut root_map = TreeMap::new();
+    root_map.insert("thing".to_string(), child);
+    let root = Object(box root_map);
+    assert_eq!(cookie.json, root); // FIXME
 }

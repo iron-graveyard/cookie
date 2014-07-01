@@ -4,7 +4,7 @@ use http::server::response::ResponseWriter;
 use super::*;
 use super::headers::*;
 use super::super::cookie::*;
-use serialize::json::{Json, ToJson};
+use serialize::json::{Json, Object, String};
 
 fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
     let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
@@ -65,7 +65,10 @@ fn check_signature() {
 #[test]
 fn check_json() {
     let headers = HeaderCollection::empty();
-    assert_eq!(get_json_cookie(headers, None, "thing", "{\"foo\":\"bar\"}".to_string().to_json()),
+    let mut obj_map = TreeMap::new();
+    obj_map.insert("foo".to_string(), String("bar".to_string()));
+    let json = Object(box obj_map);
+    assert_eq!(get_json_cookie(headers, None, "thing", json),
         // Url component encoded
-        "thing=j%3A%22%7B%22foo%22%3A%22bar%22%7D%22".to_string());
+        "thing=j%3A%7B%22foo%22%3A%22bar%22%7D".to_string());
 }
