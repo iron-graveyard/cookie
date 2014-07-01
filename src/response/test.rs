@@ -54,3 +54,22 @@ fn check_headers() {
     assert_eq!(get_cookie(headers, None, "thing", "thing"),
         "thing=thing; Max-Age=42; Domain=example.com; Path=/a/path; Secure; Http-Only; @zzmp; foo=bar".to_string());
 }
+
+#[test]
+fn check_signature() {
+    let headers = HeaderCollection::empty();
+    assert_eq!(get_cookie(headers, Some("@zzmp".to_string()), "thing", "thung"),
+        // Hash of @zzmpthung
+        "thing=s:thung.2bc9a8b82a4a393ab67b2b8aaff0e3ab33cb4aca05ef4a0ba201141fbb029f42".to_string());
+}
+
+//TO DO
+#[test]
+fn check_json() {
+
+}
+
+#[test]
+fn check_signed_json() {
+
+}
