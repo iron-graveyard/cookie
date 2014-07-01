@@ -41,7 +41,7 @@ impl Cookie {
                 sha.input(secret.as_bytes());
                 sha.input(value.as_bytes());
 
-                let hash: &mut [u8] = [];
+                let hash: &mut [u8] = [0, ..32];
                 sha.result(hash);
                 Some(hash.as_slice().to_hex())
             },
