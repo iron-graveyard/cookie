@@ -6,7 +6,7 @@ pub use iron::*;
 pub use super::*;
 pub use super::headers::*;
 pub use super::super::cookie::*;
-use serialize::json::Json;
+use serialize::json::{Json, ToJson};
 
 pub fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
     let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
@@ -16,10 +16,10 @@ pub fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &s
     res.headers.extensions.find(&"Set-Cookie".to_string()).unwrap().clone()
 }
 
-pub fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &Json) -> String {
+pub fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: Json) -> String {
     let mut res = unsafe{ ResponseWriter::new(uninitialized()) };
     let signer = Cookie::new(secret);
-    let cookie = (key.to_string(), value.clone());
+    let cookie = (key.to_string(), value);
     res.set_json_cookie(&signer, cookie, headers);
     res.headers.extensions.find(&"Set-Cookie".to_string()).unwrap().clone()
 }
@@ -34,6 +34,7 @@ fn check_cookie() {
 fn check_escaping() {
     let headers = HeaderCollection::empty();
     assert_eq!(get_cookie(headers, None, "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'", "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'"),
+        // Url component encoding
         "~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27=\
          ~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27".to_string());
 }
@@ -66,10 +67,8 @@ fn check_signature() {
 //TO DO
 #[test]
 fn check_json() {
-
-}
-
-#[test]
-fn check_signed_json() {
-
+    let headers = HeaderCollection::empty();
+    assert_eq!(get_json_cookie(headers, None, "thing", "{\"foo\":\"bar\"}".to_string().to_json()),
+        // Url component encoded
+        "thing=j%3A%22%7B%22foo%22%3A%22bar%22%7D%22".to_string());
 }
