@@ -3,6 +3,7 @@
 #![crate_id = "cookie"]
 #![deny(missing_doc)]
 #![feature(phase)]
+#![feature(globs)]
 
 //! Cookie parsing/setting middleware for the [iron](https://github.com/iron/iron) framework.
 

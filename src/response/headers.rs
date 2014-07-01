@@ -120,6 +120,6 @@ fn head<V>(header: &str, value: Option<V>, mutator: |V| -> String) -> String {
 fn extension(header: &String, value: Option<String>) -> String {
     match value {
         Some(val) => head(header.as_slice(), Some(val), |v| v),
-        None      => header.clone()
+        None      => "; ".to_string().append(header.as_slice())
     }
 }
