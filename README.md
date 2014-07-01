@@ -1,29 +1,57 @@
-middleware-seed [![Build Status](https://secure.travis-ci.org/iron/iron.png?branch=master)](https://travis-ci.org/iron/middleware-seed)
+cookie [![Build Status](https://secure.travis-ci.org/iron/cookie.png?branch=master)](https://travis-ci.org/iron/cookie)
 ====
 
-> A [rust-empty](https://github.com/bvssvni/rust-empty) derived seed to make a simple `Middleware` for the [Iron](https://github.com/iron/iron) framework.
+> Cookie parsing and setting middleware for the [Iron](https://github.com/iron/iron) web framework.
 
-## Getting started
+## Example
 
-```bash
-./configure   # Gets all dependencies and builds them
-make lib      # Build your `Middleware's` crate
-make test     # Build and run tests
-make examples # Build the examples
-make doc      # Build documentation using rustdoc
+```rust
+fn main() {
+    let mut server: ServerT = Iron::new();
+    server.chain.link(CookieParser::new()));
+    server.chain.link(FromFn::new(echo_cookies));
+    server.listen(::std::io::net::ip::Ipv4Addr(127, 0, 0, 1), 3000);
+}
+
+fn echo_cookies(_: &mut Request, _: &mut Response, alloy: &mut Alloy) -> Status {
+    let cookie = alloy.find::<Cookie>().unwrap();
+    for (key, value) in cookie.map.iter() {
+        println!("{}:\t{}", *key, *value)
+    }
+    Continue
+}
 ```
 
-##Usage
+## Overview
 
-1. Create a new empty folder for your project.
-2. Copy this entire seed to the project folder.
-3. Add any extra dependencies in the `configure` file.
- - `Iron` is included for you.
-4. Run `make clean && ./configure` to (re)load your dependencies.
-5. Type `make help`.
+cookie is a part of Iron's [core bundle](https://github.com/iron/core).
+
+- Set and parse cookies from the browser
+- Use signed cookies (using SHA-256)
+- Use JSON cookies
+
+## Installation
+
+If you're using a `Cargo.toml` to manage dependencies, just add cookie to the toml:
+
+```toml
+[dependencies.cookie]
+
+git = "https://github.com/iron/cookie.git"
+```
+
+Otherwise, `cargo build`, and the rlib will be in your `target` directory.
+
+## [Documentation](http://docs.ironframework.io/core/cookie)
+
+Along with the [online documentation](http://docs.ironframework.io/core/cookie),
+you can build a local copy with `make doc`.
+
+## [Examples](/examples)
 
 ## Get Help
 
-One of us (@reem, @zzmp, @theptrk, @mcreinhard) is usually on `#iron` on the
-mozilla irc. Come say hi and ask any questions you might have. We are also
-usually on `#rust` and `#rust-webdev`.
+One of us ([@reem](https://github.com/reem/), [@zzmp](https://github.com/zzmp/),
+[@theptrk](https://github.com/theptrk/), [@mcreinhard](https://github.com/mcreinhard))
+is usually on `#iron` on the mozilla irc. Come say hi and ask any questions you might have.
+We are also usually on `#rust` and `#rust-webdev`.
