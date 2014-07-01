@@ -48,7 +48,7 @@ impl Middleware for CookieParser {
         match req.headers.extensions.find_mut(&"Cookie".to_string()) {
             Some(cookies) => {
                 // Initialize an empty json object.
-                let mut new_json = json::Object(box TreeMap::new());
+                let mut new_json = json::Object(TreeMap::new());
                 new_cookie.map =
                     cookies
                         .as_slice()
@@ -207,10 +207,10 @@ mod test {
                                 &mut alloy);
         let mut child_map = TreeMap::new();
         child_map.insert("foo".to_string(), String("bar".to_string()));
-        let child = Object(box child_map);
+        let child = Object(child_map);
         let mut root_map = TreeMap::new();
         root_map.insert("thing".to_string(), child);
-        let root = Object(box root_map);
+        let root = Object(root_map);
         assert_eq!(cookie.json, root); // FIXME
     }
 }

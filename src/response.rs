@@ -246,7 +246,7 @@ mod test {
     fn check_stringify_json() {
         let mut obj_map = TreeMap::new();
         obj_map.insert("foo".to_string(), String("bar".to_string()));
-        let json = Object(box obj_map);
+        let json = Object(obj_map);
         assert_eq!("{\"foo\":\"bar\"}".to_string(), super::stringify_json(&json)) // FIXME
     }
 
@@ -296,7 +296,7 @@ mod test {
         let headers = HeaderCollection::empty();
         let mut obj_map = TreeMap::new();
         obj_map.insert("foo".to_string(), String("bar".to_string()));
-        let json = Object(box obj_map);
+        let json = Object(obj_map);
         assert_eq!(get_json_cookie(headers, None, "thing", json),
             // Url component encoded JSON: {"foo":"bar"}
             "thing=j%3A%7B%22foo%22%3A%22bar%22%7D".to_string());
