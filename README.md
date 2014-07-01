@@ -7,7 +7,7 @@ cookie [![Build Status](https://secure.travis-ci.org/iron/cookie.png?branch=mast
 
 ```rust
 fn main() {
-    let mut server: ServerT = Iron::new();
+    let mut server: Server = Iron::new();
     server.chain.link(CookieParser::new()));
     server.chain.link(FromFn::new(echo_cookies));
     server.listen(::std::io::net::ip::Ipv4Addr(127, 0, 0, 1), 3000);
