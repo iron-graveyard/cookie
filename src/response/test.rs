@@ -1,8 +1,6 @@
 use std::mem::uninitialized;
 use std::collections::TreeMap;
 use http::server::response::ResponseWriter;
-use http::headers::response::HeaderCollection;
-use iron::*;
 use super::*;
 use super::headers::*;
 use super::super::cookie::*;
