@@ -129,7 +129,7 @@ fn parse_json(&(ref key, ref val): &(String, String), json: &mut Json) -> bool {
             },
             _                    => ()
         }
-        return true
+        return false
     }
-    false
+    true
 }
