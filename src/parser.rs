@@ -4,8 +4,7 @@ use std::collections::treemap::TreeMap;
 use url;
 use serialize::json;
 use serialize::json::{Json, Null};
-use iron::{Request, Response, Middleware, Alloy};
-use iron::middleware::{Status, Continue};
+use iron::{Request, Response, Middleware, Alloy, Status, Continue};
 use super::Cookie;
 
 /// The cookie parsing `Middleware`.
