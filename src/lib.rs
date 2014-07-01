@@ -17,11 +17,11 @@ extern crate iron;
 extern crate http;
 extern crate crypto = "rust-crypto";
 
+pub use cookie::Cookie;
 pub use parser::CookieParser;
 pub use response::SetCookie;
-pub use cookie::Cookie;
-pub use response::headers::HeaderCollection;
+pub use response::HeaderCollection;
 
-pub mod parser;
-pub mod response;
-pub mod cookie;
+mod parser;
+mod response;
+mod cookie;
