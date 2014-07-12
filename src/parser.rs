@@ -57,7 +57,8 @@ impl Middleware for CookieParser {
                             let vec: Vec<&str> = substr.splitn('=', 1).collect();
                             let key = from_rfc_compliant(*vec.get(0));
                             let val = from_rfc_compliant(*vec.get(1));
-                            (key, val) })
+                            (key, val) 
+                        })
                         // Check for signed cookies, and filter those not signed by us
                         .filter_map(|cookie| strip_signature(cookie, &new_cookie))
                         // Move json cookies into a separate container
@@ -80,7 +81,7 @@ fn from_rfc_compliant(string: &str) -> String {
         string
             .chars()
             .skip_while(is_whitespace)
-            .collect::<String>().as_slice())
+            .collect::<String>().as_slice()).ok().unwrap()
 }
 
 fn is_whitespace(c: &char) -> bool {
