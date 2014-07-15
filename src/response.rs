@@ -81,7 +81,7 @@ fn stringify_json(json: &Json) -> String {
             let ary: Vec<String> = list.iter().map(stringify_json).collect();
             "[".to_string().append(ary.connect(",").as_slice()).append("]")
         },
-        Number(number) => number.to_str(),
+        Number(number) => number.to_string(),
         String(ref string) => "\"".to_string().append(string.as_slice()).append("\""),
         Boolean(true)      => "true".to_string(),
         Boolean(false)     => "false".to_string(),
@@ -133,7 +133,7 @@ impl HeaderCollection {
     pub fn to_cookie_av(self) -> String {
         let mut options = String::new()
             .append(head("Expires", self.expires, |v| v.rfc822()).as_slice())
-            .append(head("Max-Age", self.max_age, |v| v.to_str()).as_slice())
+            .append(head("Max-Age", self.max_age, |v| v.to_string()).as_slice())
             .append(head("Domain", self.domain, |v| v).as_slice())
             .append(head("Path", self.path, |v| v).as_slice());
         if self.secure { options.push_str("; Secure"); }
