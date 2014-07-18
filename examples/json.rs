@@ -25,7 +25,7 @@ fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Sta
                 Some(&Number(mut cnt)) => {
                     // Increment our cookie counter
                     cnt = cnt + 1f64;
-                    let count = (cnt).to_str().clone();
+                    let count = (cnt).to_string().clone();
                     println!("COOKIE COUNT: {}", count)
                     // Override the cookie with a new value
                     res.set_json_cookie(cookie, ("count".to_string(), Number(cnt)), options);
