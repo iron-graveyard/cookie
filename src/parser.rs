@@ -80,7 +80,7 @@ fn from_rfc_compliant(string: &str) -> String {
         string
             .chars()
             .skip_while(is_whitespace)
-            .collect::<String>().as_slice())
+            .collect::<String>().as_slice()).to_string()
 }
 
 fn is_whitespace(c: &char) -> bool {
