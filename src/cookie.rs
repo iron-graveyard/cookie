@@ -5,6 +5,8 @@ use serialize::json::{Json, Null};
 use serialize::hex::ToHex;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
+use crypto::mac::Mac;
+use crypto::hmac::Hmac;
 
 /// The parsed cookie.
 ///
@@ -33,16 +35,15 @@ impl Cookie {
 
     /// Encode your signature
     ///
-    /// Signatures will be encoded with SHA-256.
+    /// Signatures will be authenticated with HMAC SHA-256.
     pub fn sign(&self, value: &String) -> Option<String> {
         match self.secret {
             Some(ref secret) => {
-                let mut sha = Sha256::new();
-                sha.input(secret.as_bytes());
-                sha.input(value.as_bytes());
+                let mut hmac = Hmac::new(Sha256::new(), secret.as_bytes());
+                hmac.input(value.as_bytes());
 
                 let hash: &mut [u8] = [0, ..32];
-                sha.result(hash);
+                hmac.raw_result(hash);
                 Some(hash.as_slice().to_hex())
             },
             None             => None
