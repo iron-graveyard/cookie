@@ -97,6 +97,7 @@ fn is_whitespace(c: &char) -> bool {
 
 fn strip_signature((key, val): (String, String), signer: &Cookie) -> Option<(String, String)> {
     if val.len() > 2 && val.as_slice().slice(0, 2) == "s:" {
+        if !signer.signed { return None }
         // Extract the signature (in hex), appended onto the cookie after `.`
         return regex!(r"\.[^\.]*$").find(val.as_slice())
             // If it was signed by us, clear the signature
@@ -115,7 +116,10 @@ fn strip_signature((key, val): (String, String), signer: &Cookie) -> Option<(Str
                     })
             })
     }
-    Some((key, val))
+    match signer.signed {
+        true => None,
+        false => Some((key, val))
+    }
 }
 
 fn parse_json(&(ref key, ref val): &(String, String), json: &mut Json) -> bool {
@@ -199,6 +203,17 @@ mod test {
         let mut map = HashMap::new();
         map.insert("thing".to_string(),
                    "thung".to_string());
+        assert_eq!(cookie.map, map);
+    }
+
+    #[test]
+    fn check_silo() {
+        // The unsigned cookie should not be parsed by the signed cookie parser
+        let mut alloy = Alloy::new();
+        let cookie = get_cookie(Some("@zzmp".to_string()),
+                                "thing=thung".to_string(),
+                                &mut alloy);
+        let map = HashMap::new();
         assert_eq!(cookie.map, map);
     }
 
