@@ -13,6 +13,8 @@ use crypto::hmac::Hmac;
 /// This is the type stored in the alloy.
 #[deriving(Show)]
 pub struct Cookie {
+    /// True to set/get signed cookies only
+    pub signed: bool,
     secret: Option<String>,
     /// The parsed RFC 6265-styled cookies.
     pub map: HashMap<String, String>,
@@ -27,6 +29,7 @@ impl Cookie {
     /// Create a new cookie
     pub fn new(secret: Option<String>) -> Cookie {
         Cookie {
+            signed: secret.is_some(),
             secret: secret,
             map: HashMap::new(),
             json: Null
