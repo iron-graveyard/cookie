@@ -287,8 +287,8 @@ mod test {
     fn check_signature() {
         let headers = HeaderCollection::empty();
         assert_eq!(get_cookie(headers, Some("@zzmp".to_string()), "thing", "thung"),
-            // Hash of @zzmpthung, the SHA-256 signature of the signed cookie
-            "thing=s:thung.2bc9a8b82a4a393ab67b2b8aaff0e3ab33cb4aca05ef4a0ba201141fbb029f42".to_string());
+            // HMAC-SHA256 of key "@zzmp" and message "thung"
+            "thing=s:thung.e99abddcf60cad18f8d4b993efae53e81410cf2b2855af0309f1ae46fa527fbb".to_string());
     }
 
     #[test]

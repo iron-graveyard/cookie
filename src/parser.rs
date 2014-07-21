@@ -191,10 +191,10 @@ mod test {
 
     #[test]
     fn check_signature() {
-        // The signature should be a SHA-256 hash of @zzmpthung
+        // The signature should be the HMAC-SHA256 hash of key "@zzmp" and message "thung"
         let mut alloy = Alloy::new();
         let cookie = get_cookie(Some("@zzmp".to_string()),
-                                "thing=s:thung.2bc9a8b82a4a393ab67b2b8aaff0e3ab33cb4aca05ef4a0ba201141fbb029f42".to_string(),
+                                "thing=s:thung.e99abddcf60cad18f8d4b993efae53e81410cf2b2855af0309f1ae46fa527fbb".to_string(),
                                 &mut alloy);
         let mut map = HashMap::new();
         map.insert("thing".to_string(),
