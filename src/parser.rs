@@ -55,8 +55,8 @@ impl Middleware for CookieParser {
                         // Decode from uri component encoding
                         .map(|substr| {
                             let vec: Vec<&str> = substr.splitn('=', 1).collect();
-                            let key = from_rfc_compliant(*vec.get(0));
-                            let val = from_rfc_compliant(*vec.get(1));
+                            let key = from_rfc_compliant(vec[0]);
+                            let val = from_rfc_compliant(vec[1]);
                             (key, val) })
                         // Check for signed cookies, and filter those not signed by us
                         .filter_map(|cookie| strip_signature(cookie, &new_cookie))
@@ -76,11 +76,16 @@ impl Middleware for CookieParser {
 }
 
 fn from_rfc_compliant(string: &str) -> String {
-    url::decode_component(
+    let decode_result = url::decode_component(
         string
             .chars()
             .skip_while(is_whitespace)
-            .collect::<String>().as_slice())
+            .collect::<String>()
+    );
+    match decode_result {
+        Ok(s) => s,
+        Err(_) => fail!("Failed to decode: '{:s}'", string)
+    }
 }
 
 fn is_whitespace(c: &char) -> bool {

@@ -20,10 +20,10 @@ fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Sta
                     // Convert the string to an int
                     let cnt: Option<int> = from_str(i.as_slice());
                     // Increment our cookie counter
-                    let count = (cnt.unwrap() + 1).to_str().clone();
+                    let count = (cnt.unwrap() + 1).to_string();
                     println!("COOKIE COUNT: {}", i)
                     // Override the cookie with a new value
-                    res.set_cookie(cookie, ("count".to_string(), count.to_string()), options);
+                    res.set_cookie(cookie, ("count".to_string(), count.clone()), options);
                     let _ = res.serve(Ok, format!("Hit Counter: {}", count).as_slice());
                 },
                 _       => {
