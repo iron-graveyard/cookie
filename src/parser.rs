@@ -151,22 +151,20 @@ mod test {
 
     // Parse a given `String` as an HTTP Cookie header, using the CookieParser middleware,
     // and return the cookie stored in the alloy by that middleware
-    fn get_cookie<'a>(secret: Option<String>, cookie: String, alloy: &'a mut Alloy) -> &'a Cookie {
-        let mut res = unsafe { Request{
+    fn get_cookie(secret: Option<String>, cookie: String, alloy: &mut Alloy) -> &Cookie {
+        let mut req = Request {
+            url: "".to_string(),
             remote_addr: None,
             headers: box HeaderCollection::new(),
             body: "".to_string(),
             method: ::http::method::Get,
-            request_uri: uninitialized(),
-            close_connection: false,
-            version: (1, 1)
-        } };
-        res.headers.extensions.insert("Cookie".to_string(), cookie);
+        };
+        req.headers.extensions.insert("Cookie".to_string(), cookie);
         let mut signer = match secret {
             Some(s) => CookieParser::signed(s),
             None => CookieParser::new()
         };
-        unsafe { signer.enter(&mut res, uninitialized(), alloy) };
+        unsafe { signer.enter(&mut req, uninitialized(), alloy) };
         alloy.find::<Cookie>().unwrap()
     }
 

@@ -37,7 +37,7 @@ pub trait SetCookie {
     fn set_json_cookie(&mut self, &Cookie, (String, Json), HeaderCollection);
 }
 
-impl<'a> SetCookie for Response<'a> {
+impl<'a, 'b> SetCookie for Response<'a, 'b> {
     fn set_cookie(&mut self,
                   signer: &Cookie,
                   (key, value): (String, String),
@@ -222,10 +222,12 @@ mod test {
     use super::*;
     use super::super::cookie::*;
     use serialize::json::{Json, Object, String};
+    use iron::Response;
 
     // Set a cookie and return its set value
     fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
-        let mut res = unsafe { ResponseWriter::new(uninitialized()) };
+        let mut http_res = unsafe { ResponseWriter::new(uninitialized()) };
+        let mut res = Response::from_http(&mut http_res);
         let signer = Cookie::new(secret);
         let cookie = (key.to_string(), value.to_string());
         res.set_cookie(&signer, cookie, headers);
@@ -234,7 +236,8 @@ mod test {
 
     // Set a JSON cookie and return its set value
     fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: Json) -> String {
-        let mut res = unsafe { ResponseWriter::new(uninitialized()) };
+        let mut http_res = unsafe { ResponseWriter::new(uninitialized()) };
+        let mut res = Response::from_http(&mut http_res);
         let signer = Cookie::new(secret);
         let cookie = (key.to_string(), value);
         res.set_json_cookie(&signer, cookie, headers);
