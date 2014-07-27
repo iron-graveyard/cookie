@@ -5,7 +5,6 @@ extern crate cookie;
 use std::io::net::ip::Ipv4Addr;
 use http::status::Ok;
 use iron::{Iron, Server, Chain, Request, Response, Alloy, Status, Continue, FromFn};
-use iron::mixin::Serve;
 use cookie::{CookieParser, Cookie, SetCookie, HeaderCollection};
 
 fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Status {
