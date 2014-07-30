@@ -6,6 +6,7 @@ use serialize::json;
 use serialize::json::{Json, Null};
 use iron::{Request, Response, Middleware, Alloy, Status, Continue};
 use super::Cookie;
+use crypto::util::fixed_time_eq;
 
 /// The cookie parsing `Middleware`.
 ///
@@ -106,7 +107,7 @@ fn strip_signature((key, val): (String, String), signer: &Cookie) -> Option<(Str
                     // We need to maintain access to (beg, end), so we chain the signature
                     .and_then(|signature| {
                         // If the signature is valid, strip it
-                        if val.as_slice().slice(beg + 1, end) == signature.as_slice() {
+                        if fixed_time_eq(val.as_slice().slice(beg + 1, end).as_bytes(), signature.as_bytes()) {
                             // key must be cloned to move out of the closure capture
                             Some((key.clone(), val.as_slice().slice(2, beg).to_string()))
                         // Else, remove the cookie
