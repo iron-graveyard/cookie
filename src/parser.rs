@@ -1,7 +1,7 @@
 //! Parsing functionality - get cookie data
 
 use std::collections::treemap::TreeMap;
-use url;
+use url::lossy_utf8_percent_decode;
 use serialize::json;
 use serialize::json::{Json, Null};
 use iron::{Request, Response, Middleware, Alloy, Status, Continue};
@@ -77,16 +77,13 @@ impl Middleware for CookieParser {
 }
 
 fn from_rfc_compliant(string: &str) -> String {
-    let decode_result = url::decode_component(
+    lossy_utf8_percent_decode(
         string
             .chars()
             .skip_while(is_whitespace)
             .collect::<String>()
-    );
-    match decode_result {
-        Ok(s) => s,
-        Err(_) => fail!("Failed to decode: '{:s}'", string)
-    }
+            .as_bytes()
+    )
 }
 
 fn is_whitespace(c: &char) -> bool {

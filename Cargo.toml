@@ -17,3 +17,6 @@ git = "https://github.com/iron/iron.git"
 
 git = "https://github.com/DaGenix/rust-crypto.git"
 
+[dependencies.url]
+
+git = "https://github.com/servo/rust-url.git"

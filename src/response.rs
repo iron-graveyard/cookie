@@ -1,6 +1,6 @@
 //! Setting functionality - set cookie data
 
-use url;
+use url::{utf8_percent_encode, USERNAME_ENCODE_SET};
 use serialize::json::{Json, Number, String, Boolean, List, Object, Null};
 use iron::Response;
 use super::Cookie;
@@ -46,17 +46,17 @@ impl<'a, 'b> SetCookie for Response<'a, 'b> {
         self.headers.extensions.insert("Set-Cookie".to_string(),
             match signer.sign(&value) {
                 Some(signature) => {
-                    url::encode_component(key.as_slice())
+                    utf8_percent_encode(key.as_slice(), USERNAME_ENCODE_SET)
                         .append("=")
                         .append("s:")
-                        .append(url::encode_component(value.as_slice()).as_slice())
+                        .append(utf8_percent_encode(value.as_slice(), USERNAME_ENCODE_SET).as_slice())
                         .append(".")
                         .append(signature.as_slice())
                 },
                 None            => {
-                    url::encode_component(key.as_slice())
+                    utf8_percent_encode(key.as_slice(), USERNAME_ENCODE_SET)
                         .append("=")
-                        .append(url::encode_component(value.as_slice()).as_slice())
+                        .append(utf8_percent_encode(value.as_slice(), USERNAME_ENCODE_SET).as_slice())
                 }
             }.append(options.to_cookie_av().as_slice())
         );
