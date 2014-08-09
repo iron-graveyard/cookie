@@ -4,7 +4,7 @@ use std::collections::treemap::TreeMap;
 use url::lossy_utf8_percent_decode;
 use serialize::json;
 use serialize::json::{Json, Null};
-use iron::{Request, Response, Middleware, Alloy, Status, Continue};
+use iron::{Request, Response, Middleware, Status, Continue};
 use super::Cookie;
 use crypto::util::fixed_time_eq;
 
@@ -41,7 +41,7 @@ impl Middleware for CookieParser {
     /// Parse the cookie received in the HTTP header.
     ///
     /// This will parse the body of a cookie into the alloy, under type `Cookie`.
-    fn enter(&mut self, req: &mut Request, _res: &mut Response, alloy: &mut Alloy) -> Status {
+    fn enter(&mut self, req: &mut Request, _res: &mut Response) -> Status {
         // Initialize a cookie. This will store parsed cookies and generate signatures.
         let mut new_cookie = Cookie::new(self.secret.clone());
 
@@ -71,7 +71,7 @@ impl Middleware for CookieParser {
             },
             None => ()
         }
-        alloy.insert(new_cookie);
+        req.alloy.insert(new_cookie);
         Continue
     }
 }
@@ -149,7 +149,7 @@ mod test {
 
     // Parse a given `String` as an HTTP Cookie header, using the CookieParser middleware,
     // and return the cookie stored in the alloy by that middleware
-    fn get_cookie(secret: Option<String>, cookie: String, alloy: &mut Alloy) -> &Cookie {
+    fn get_cookie(secret: Option<String>, cookie: String) -> &Cookie {
         let mut req = Request {
             url: "".to_string(),
             remote_addr: None,
@@ -162,8 +162,8 @@ mod test {
             Some(s) => CookieParser::signed(s),
             None => CookieParser::new()
         };
-        unsafe { signer.enter(&mut req, uninitialized(), alloy) };
-        alloy.find::<Cookie>().unwrap()
+        unsafe { signer.enter(&mut req, uninitialized(), req.alloy) };
+        req.alloy.find::<Cookie>().unwrap()
     }
 
     #[test]
