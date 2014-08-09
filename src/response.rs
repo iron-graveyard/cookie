@@ -1,6 +1,6 @@
 //! Setting functionality - set cookie data
 
-use url::{utf8_percent_encode, USERNAME_ENCODE_SET};
+use url::{utf8_percent_encode, FORM_URLENCODED_ENCODE_SET};
 use serialize::json::{Json, Number, String, Boolean, List, Object, Null};
 use iron::Response;
 use super::Cookie;
@@ -37,7 +37,7 @@ pub trait SetCookie {
     fn set_json_cookie(&mut self, &Cookie, (String, Json), HeaderCollection);
 }
 
-impl<'a, 'b> SetCookie for Response<'a, 'b> {
+impl SetCookie for Response {
     fn set_cookie(&mut self,
                   signer: &Cookie,
                   (key, value): (String, String),
@@ -46,17 +46,17 @@ impl<'a, 'b> SetCookie for Response<'a, 'b> {
         self.headers.extensions.insert("Set-Cookie".to_string(),
             match signer.sign(&value) {
                 Some(signature) => {
-                    utf8_percent_encode(key.as_slice(), USERNAME_ENCODE_SET)
+                    utf8_percent_encode(key.as_slice(), FORM_URLENCODED_ENCODE_SET)
                         .append("=")
                         .append("s:")
-                        .append(utf8_percent_encode(value.as_slice(), USERNAME_ENCODE_SET).as_slice())
+                        .append(utf8_percent_encode(value.as_slice(), FORM_URLENCODED_ENCODE_SET).as_slice())
                         .append(".")
                         .append(signature.as_slice())
                 },
                 None            => {
-                    utf8_percent_encode(key.as_slice(), USERNAME_ENCODE_SET)
+                    utf8_percent_encode(key.as_slice(), FORM_URLENCODED_ENCODE_SET)
                         .append("=")
-                        .append(utf8_percent_encode(value.as_slice(), USERNAME_ENCODE_SET).as_slice())
+                        .append(utf8_percent_encode(value.as_slice(), FORM_URLENCODED_ENCODE_SET).as_slice())
                 }
             }.append(options.to_cookie_av().as_slice())
         );
@@ -264,8 +264,8 @@ mod test {
         let headers = HeaderCollection::empty();
         assert_eq!(get_cookie(headers, None, "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'", "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'"),
             // Url component encoding should escape these characters
-            "~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27=\
-             ~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27".to_string());
+            "~%60%21%40%23%24%25%5E%26*%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27=\
+             ~%60%21%40%23%24%25%5E%26*%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27".to_string());
     }
 
     #[test]

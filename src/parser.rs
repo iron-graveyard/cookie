@@ -148,8 +148,8 @@ fn parse_json(&(ref key, ref val): &(String, String), json: &mut Json) -> bool {
 mod test {
     use std::mem::uninitialized;
     use std::collections::{HashMap, TreeMap};
-    use http::headers::request::HeaderCollection;
-    use iron::{Request, Alloy, Middleware};
+    use iron::{Request, Middleware};
+    use test::mock::request;
     use super::*;
     use super::super::cookie::*;
     use serialize::json::{Object, String};
@@ -157,14 +157,7 @@ mod test {
     // Parse a given `String` as an HTTP Cookie header, using the CookieParser middleware,
     // and return the cookie stored in the alloy by that middleware
     fn get_cookie_request(secret: Option<String>, cookie: String) -> Request {
-        let mut req = Request {
-            url: unsafe{ uninitialized() },
-            remote_addr: None,
-            headers: box HeaderCollection::new(),
-            body: "".to_string(),
-            method: ::http::method::Get,
-            alloy: Alloy::new()
-        };
+        let mut req = request::new(::http::method::Get, "localhost:3000");
         req.headers.extensions.insert("Cookie".to_string(), cookie);
         let mut signer = match secret {
             Some(s) => CookieParser::signed(s),
