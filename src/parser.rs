@@ -149,27 +149,28 @@ mod test {
 
     // Parse a given `String` as an HTTP Cookie header, using the CookieParser middleware,
     // and return the cookie stored in the alloy by that middleware
-    fn get_cookie(secret: Option<String>, cookie: String) -> &Cookie {
+    fn get_cookie_request(secret: Option<String>, cookie: String) -> Request {
         let mut req = Request {
-            url: "".to_string(),
+            url: unsafe{ uninitialized() },
             remote_addr: None,
             headers: box HeaderCollection::new(),
             body: "".to_string(),
             method: ::http::method::Get,
+            alloy: Alloy::new()
         };
         req.headers.extensions.insert("Cookie".to_string(), cookie);
         let mut signer = match secret {
             Some(s) => CookieParser::signed(s),
             None => CookieParser::new()
         };
-        unsafe { signer.enter(&mut req, uninitialized(), req.alloy) };
-        req.alloy.find::<Cookie>().unwrap()
+        unsafe { signer.enter(&mut req, uninitialized()) };
+        req
     }
 
     #[test]
     fn check_cookie() {
-        let mut alloy = Alloy::new();
-        let cookie = get_cookie(None, "thing=thing".to_string(), &mut alloy);
+        let cookie_request = get_cookie_request(None, "thing=thing".to_string());
+        let cookie = cookie_request.alloy.find::<Cookie>().unwrap();
         let mut map = HashMap::new();
         map.insert("thing".to_string(), "thing".to_string());
         assert_eq!(cookie.map, map);
@@ -178,11 +179,10 @@ mod test {
     #[test]
     fn check_escaping() {
         // Url component decoding should decode the escaped characters
-        let mut alloy = Alloy::new();
-        let cookie = get_cookie(None,
+        let cookie_request = get_cookie_request(None,
                                 "~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27=\
-                                ~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27".to_string(),
-                                &mut alloy);
+                                ~%60%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%7B%7D%7C%5B%5D%5C%3A%22%3B%27%3C%3E%3F%2C.%2F%27".to_string());
+        let cookie = cookie_request.alloy.find::<Cookie>().unwrap();
         let mut map = HashMap::new();
         map.insert("~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'".to_string(),
                    "~`!@#$%^&*()_+-={}|[]\\:\";'<>?,./'".to_string());
@@ -192,10 +192,9 @@ mod test {
     #[test]
     fn check_signature() {
         // The signature should be the HMAC-SHA256 hash of key "@zzmp" and message "thung"
-        let mut alloy = Alloy::new();
-        let cookie = get_cookie(Some("@zzmp".to_string()),
-                                "thing=s:thung.e99abddcf60cad18f8d4b993efae53e81410cf2b2855af0309f1ae46fa527fbb".to_string(),
-                                &mut alloy);
+        let cookie_request = get_cookie_request(Some("@zzmp".to_string()),
+                                "thing=s:thung.e99abddcf60cad18f8d4b993efae53e81410cf2b2855af0309f1ae46fa527fbb".to_string());
+        let cookie = cookie_request.alloy.find::<Cookie>().unwrap();
         let mut map = HashMap::new();
         map.insert("thing".to_string(),
                    "thung".to_string());
@@ -205,10 +204,9 @@ mod test {
     #[test]
     fn check_silo() {
         // The unsigned cookie should not be parsed by the signed cookie parser
-        let mut alloy = Alloy::new();
-        let cookie = get_cookie(Some("@zzmp".to_string()),
-                                "thing=thung".to_string(),
-                                &mut alloy);
+        let cookie_request = get_cookie_request(Some("@zzmp".to_string()),
+                                "thing=thung".to_string());
+        let cookie = cookie_request.alloy.find::<Cookie>().unwrap();
         let map = HashMap::new();
         assert_eq!(cookie.map, map);
     }
@@ -216,10 +214,9 @@ mod test {
     #[test]
     fn check_json() {
         // Parse the Url component JSON: {"thing":{"foo":"bar"}}
-        let mut alloy = Alloy::new();
-        let cookie = get_cookie(None,
-                                "thing=j%3A%7B%22foo%22%3A%22bar%22%7D".to_string(),
-                                &mut alloy);
+        let cookie_request = get_cookie_request(None,
+                                "thing=j%3A%7B%22foo%22%3A%22bar%22%7D".to_string());
+        let cookie = cookie_request.alloy.find::<Cookie>().unwrap();
         let mut child_map = TreeMap::new();
         child_map.insert("foo".to_string(), String("bar".to_string()));
         let child = Object(child_map);
