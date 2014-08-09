@@ -6,10 +6,6 @@
 #![feature(globs)]
 
 //! Cookie parsing/setting middleware for the [iron](https://github.com/iron/iron) framework.
-//!
-//! __Warning__: Signed cookies are checked with a `==` operation,
-//! which is not guaranteed to be fixed time.
-//! _This leaves cookies vulnerable to length extension attacks._
 
 extern crate time;
 extern crate rustc;
