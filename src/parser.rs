@@ -146,10 +146,9 @@ fn parse_json(&(ref key, ref val): &(String, String), json: &mut Json) -> bool {
 
 #[cfg(test)]
 mod test {
-    use std::mem::uninitialized;
     use std::collections::{HashMap, TreeMap};
     use iron::{Request, Middleware};
-    use test::mock::request;
+    use test::mock::{request, response};
     use super::*;
     use super::super::cookie::*;
     use serialize::json::{Object, String};
@@ -163,7 +162,7 @@ mod test {
             Some(s) => CookieParser::signed(s),
             None => CookieParser::new()
         };
-        unsafe { signer.enter(&mut req, uninitialized()) };
+        signer.enter(&mut req, &mut response::new());
         req
     }
 
