@@ -1,4 +1,8 @@
 //! Parsing functionality - get cookie data
+//!
+//! __Warning__: Signed cookies are checked with a `==` operation,
+//! which is not guaranteed to be fixed time.
+//! _This leaves cookies vulnerable to length extension attacks._
 
 use std::collections::treemap::TreeMap;
 use url::lossy_utf8_percent_decode;
@@ -6,7 +10,7 @@ use serialize::json;
 use serialize::json::{Json, Null};
 use iron::{Request, Response, Middleware, Status, Continue};
 use super::Cookie;
-use crypto::util::fixed_time_eq;
+//use crypto::util::fixed_time_eq;
 
 /// The cookie parsing `Middleware`.
 ///
@@ -104,7 +108,10 @@ fn strip_signature((key, val): (String, String), signer: &Cookie) -> Option<(Str
                     // We need to maintain access to (beg, end), so we chain the signature
                     .and_then(|signature| {
                         // If the signature is valid, strip it
-                        if fixed_time_eq(val.as_slice().slice(beg + 1, end).as_bytes(), signature.as_bytes()) {
+                        /* This should be done in constant time, to avoid length extension attacks,
+                         * but using `fixed_time_eq` causes a segfault
+                         * if fixed_time_eq(val.as_slice().slice(beg + 1, end).as_bytes(), signature.as_bytes()) {
+                         */if val.as_slice().slice(beg + 1, end) == signature.as_slice() {
                             // key must be cloned to move out of the closure capture
                             Some((key.clone(), val.as_slice().slice(2, beg).to_string()))
                         // Else, remove the cookie
