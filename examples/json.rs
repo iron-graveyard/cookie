@@ -8,14 +8,14 @@ extern crate serialize;
 use std::io::net::ip::Ipv4Addr;
 use serialize::json::Number;
 use http::status::Ok;
-use iron::{Iron, Server, Chain, Request, Response, Alloy, Status, Continue, FromFn};
+use iron::{Iron, Server, Chain, Request, Response, Status, Continue, FromFn};
 use cookie::{CookieParser, Cookie, SetCookie, HeaderCollection};
 
-fn count_views(_req: &mut Request, res: &mut Response, alloy: &mut Alloy) -> Status {
+fn count_views(req: &mut Request, res: &mut Response) -> Status {
     // Only hold on to cookies for ten seconds
     let options = HeaderCollection::aged(10);
 
-    match alloy.find::<Cookie>() {
+    match req.alloy.find::<Cookie>() {
         Some(cookie) => {
             // Find the "count" cookie
             debug!("COOKIE struct: {}", cookie)
