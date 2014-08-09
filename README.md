@@ -13,8 +13,8 @@ fn main() {
     server.listen(::std::io::net::ip::Ipv4Addr(127, 0, 0, 1), 3000);
 }
 
-fn echo_cookies(_: &mut Request, _: &mut Response, alloy: &mut Alloy) -> Status {
-    let cookie = alloy.find::<Cookie>().unwrap();
+fn echo_cookies(req: &mut Request, _: &mut Response) -> Status {
+    let cookie = req.alloy.find::<Cookie>().unwrap();
     for (key, value) in cookie.map.iter() {
         println!("{}:\t{}", *key, *value)
     }
@@ -27,7 +27,7 @@ fn echo_cookies(_: &mut Request, _: &mut Response, alloy: &mut Alloy) -> Status 
 cookie is a part of Iron's [core bundle](https://github.com/iron/core).
 
 - Set and parse cookies from the browser
-- Use signed cookies (using SHA-256)
+- Use signed cookies (using an HMAC)
 - Use JSON cookies
 
 ## Installation
@@ -45,7 +45,7 @@ Otherwise, `cargo build`, and the rlib will be in your `target` directory.
 ## [Documentation](http://docs.ironframework.io/cookie)
 
 Along with the [online documentation](http://docs.ironframework.io/cookie),
-you can build a local copy with `make doc`.
+you can build a local copy with `cargo doc`.
 
 ## [Examples](/examples)
 
