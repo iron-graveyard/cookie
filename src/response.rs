@@ -216,18 +216,15 @@ fn extension(header: &String, value: Option<String>) -> String {
 
 #[cfg(test)]
 mod test {
-    use std::mem::uninitialized;
     use std::collections::TreeMap;
-    use http::server::response::ResponseWriter;
     use super::*;
     use super::super::cookie::*;
     use serialize::json::{Json, Object, String};
-    use iron::Response;
+    use test::mock::response;
 
     // Set a cookie and return its set value
     fn get_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: &str) -> String {
-        let mut http_res = unsafe { ResponseWriter::new(uninitialized()) };
-        let mut res = Response::from_http(&mut http_res);
+        let mut res = response::new();
         let signer = Cookie::new(secret);
         let cookie = (key.to_string(), value.to_string());
         res.set_cookie(&signer, cookie, headers);
@@ -236,8 +233,7 @@ mod test {
 
     // Set a JSON cookie and return its set value
     fn get_json_cookie<'a>(headers: HeaderCollection, secret: Option<String>, key: &str, value: Json) -> String {
-        let mut http_res = unsafe { ResponseWriter::new(uninitialized()) };
-        let mut res = Response::from_http(&mut http_res);
+        let mut res = response::new();
         let signer = Cookie::new(secret);
         let cookie = (key.to_string(), value);
         res.set_json_cookie(&signer, cookie, headers);
