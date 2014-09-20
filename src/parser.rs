@@ -2,11 +2,11 @@
 
 use std::collections::treemap::TreeMap;
 use url::lossy_utf8_percent_decode;
-use serialize::json;
-use serialize::json::{Json, Null};
-use iron::{Request, Response, Middleware, Status, Continue};
+use serialize::json::{mod, Json, Null};
+use iron::{Request, Response, BeforeMiddleware, IronResult};
 use super::Cookie;
 use crypto::util::fixed_time_eq;
+use iron::typemap::Assoc;
 
 /// The cookie parsing `Middleware`.
 ///
@@ -19,6 +19,8 @@ use crypto::util::fixed_time_eq;
 pub struct CookieParser {
     secret: Option<String>
 }
+
+impl Assoc<CookieParser> for Cookie {}
 
 impl CookieParser {
     /// Create a new instance of the cookie parsing `Middleware`.
@@ -37,11 +39,11 @@ impl CookieParser {
     pub fn signed(secret: String) -> CookieParser { CookieParser{ secret: Some(secret) } }
 }
 
-impl Middleware for CookieParser {
+impl BeforeMiddleware for CookieParser {
     /// Parse the cookie received in the HTTP header.
     ///
     /// This will parse the body of a cookie into the alloy, under type `Cookie`.
-    fn enter(&mut self, req: &mut Request, _res: &mut Response) -> Status {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
         // Initialize a cookie. This will store parsed cookies and generate signatures.
         let mut new_cookie = Cookie::new(self.secret.clone());
 
@@ -55,7 +57,7 @@ impl Middleware for CookieParser {
                         .split(';')
                         // Decode from uri component encoding
                         .map(|substr| {
-                            let vec: Vec<&str> = substr.splitn('=', 1).collect();
+                            let vec: Vec<&str> = substr.splitn(1, '=').collect();
                             let key = from_rfc_compliant(vec[0]);
                             let val = from_rfc_compliant(vec[1]);
                             (key, val) })
@@ -71,8 +73,8 @@ impl Middleware for CookieParser {
             },
             None => ()
         }
-        req.alloy.insert(new_cookie);
-        Continue
+        req.extensions.insert::<Cookie, CookieParser>(new_cookie);
+        Ok(())
     }
 }
 
@@ -140,7 +142,7 @@ fn parse_json(&(ref key, ref val): &(String, String), json: &mut Json) -> bool {
 #[cfg(test)]
 mod test {
     use std::collections::{HashMap, TreeMap};
-    use iron::{Request, Middleware};
+    use iron::Request;
     use test::mock::{request, response};
     use super::*;
     use super::super::cookie::*;
