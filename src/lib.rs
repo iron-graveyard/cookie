@@ -15,9 +15,9 @@ extern crate url;
 extern crate serialize;
 extern crate iron;
 extern crate http;
-extern crate crypto = "rust-crypto";
+extern crate "rust-crypto" as crypto;
 #[cfg(test)]
-extern crate test = "iron-test";
+extern crate "iron-test" as test;
 
 pub use cookie::Cookie;
 pub use parser::CookieParser;
