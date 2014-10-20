@@ -4,6 +4,7 @@
 #![deny(missing_doc)]
 #![feature(phase)]
 #![feature(globs)]
+#![feature(default_type_params)]
 
 //! Cookie parsing/setting middleware for the [iron](https://github.com/iron/iron) framework.
 
@@ -15,6 +16,8 @@ extern crate url;
 extern crate serialize;
 extern crate iron;
 extern crate http;
+extern crate plugin;
+extern crate persistent;
 extern crate "rust-crypto" as crypto;
 #[cfg(test)]
 extern crate "iron-test" as test;

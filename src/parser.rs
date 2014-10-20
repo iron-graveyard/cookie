@@ -4,10 +4,12 @@ use std::collections::treemap::TreeMap;
 use url::lossy_utf8_percent_decode;
 use serialize::json;
 use serialize::json::{Json, Null};
-use iron::{Request, BeforeMiddleware, IronResult};
+use iron::{Request, IronResult, Plugin};
 use iron::typemap::Assoc;
 use super::Cookie;
 use crypto::util::fixed_time_eq;
+use plugin::{PluginFor, Phantom};
+use persistent::Read;
 
 /// The cookie parsing `Middleware`.
 ///
@@ -17,40 +19,28 @@ use crypto::util::fixed_time_eq;
 /// before any other middleware using cookies, or the parsed cookie
 /// will not be available to that middleware.
 #[deriving(Clone)]
-pub struct CookieParser {
-    secret: Option<String>
+pub struct CookieSettings {
+    pub secret: Option<String>,
 }
+
+pub struct CookieParser;
+
+impl Assoc<CookieSettings> for CookieParser {}
 
 impl Assoc<Cookie> for CookieParser {}
 
-impl CookieParser {
-    /// Create a new instance of the cookie parsing `Middleware`.
-    ///
-    /// This instance will parse both RFC 6265-styled cookies:
-    /// `key=value; key=value;`
-    /// and json-styled cookies, as set with `res.set_json_cookie(...)`.
-    pub fn new() -> CookieParser { CookieParser{ secret: None} }
-
-    /// Create a cookie parser with secret, for signed cookies.
-    ///
-    /// This instance will parse any cookies that have been signed by
-    /// you, or that are unsigned. It will not parse those cookies signed by others.
-    ///
-    /// Otherwise, it will behave exactly like that produced by `new`.
-    pub fn signed(secret: String) -> CookieParser { CookieParser{ secret: Some(secret) } }
-}
-
-impl BeforeMiddleware for CookieParser {
+impl PluginFor<Request, Cookie> for CookieParser {
     /// Parse the cookie received in the HTTP header.
     ///
     /// This will parse the body of a cookie into the alloy, under type `Cookie`.
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        // Initialize a cookie. This will store parsed cookies and generate signatures.
-        let mut new_cookie = Cookie::new(self.secret.clone());
+    fn eval(req: &Request, _: Phantom<CookieParser>) -> Option<Cookie> {
+        let CookieSettings { secret }: CookieSettings
+            = req.get::<Read<CookieParser, CookieSettings>>().unwrap();
+        let mut new_cookie = Cookie::new(secret.clone());
 
         match req.headers.extensions.find_mut(&"Cookie".to_string()) {
             Some(cookies) => {
-                // Initialize an empty json object.
+                //Initialize an empty json object.
                 let mut new_json = json::Object(TreeMap::new());
                 new_cookie.map =
                     cookies
@@ -71,11 +61,10 @@ impl BeforeMiddleware for CookieParser {
                 // This cannot be inserted via iterators because strip_signature
                 // is already borrowing new_cookie.
                 new_cookie.json = new_json;
+                Some(new_cookie)
             },
-            None => ()
+            None => None
         }
-        req.extensions.insert::<CookieParser, Cookie>(new_cookie);
-        Ok(())
     }
 }
 
