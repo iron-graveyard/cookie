@@ -27,4 +27,4 @@ git = "https://github.com/iron/persistent.git"
 
 [dev-dependencies.iron-test]
 
-git = "https://github.com/reem/iron-test.git"
+git = "https://github.com/iron/iron-test.git"

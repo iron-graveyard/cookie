@@ -24,6 +24,7 @@ extern crate "iron-test" as test;
 
 pub use cookie::Cookie;
 pub use parser::CookieParser;
+pub use parser::CookieSettings;
 pub use response::SetCookie;
 pub use response::HeaderCollection;
 
