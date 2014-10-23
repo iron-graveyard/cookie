@@ -36,7 +36,7 @@ fn count_views(req: &mut Request) -> IronResult<Response> {
                 }
             }
         },
-        _ => {println!("nope!");} // This should never occur, so long as the CookieSettings is linked first
+        _ => {} // This should never occur, so long as the CookieSettings is linked first
     }
     Ok(Response::new())
 }

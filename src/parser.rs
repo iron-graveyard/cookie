@@ -36,7 +36,9 @@ impl PluginFor<Request, Cookie> for CookieParser {
     /// This will parse the body of a cookie into the alloy, under type `Cookie`.
     fn eval(req: &mut Request, _: Phantom<CookieParser>) -> Option<Cookie> {
         let CookieSettings { secret }: CookieSettings
-            = req.get::<Read<CookieParser, CookieSettings>>().unwrap().deref().clone();
+            = req.get::<Read<CookieParser, CookieSettings>>()
+                .expect("CookieSettings need to be linked to chain.")
+                .deref().clone();
         let mut new_cookie = Cookie::new(secret.clone());
 
         match req.headers.extensions.find_mut(&"Cookie".to_string()) {
