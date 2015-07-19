@@ -7,18 +7,21 @@ cookie [![Build Status](https://secure.travis-ci.org/iron/cookie.png?branch=mast
 
 ```rust
 fn main() {
-    let mut server: Server = Iron::new();
-    server.chain.link(CookieParser::new()));
-    server.chain.link(FromFn::new(echo_cookies));
-    server.listen(::std::io::net::ip::Ipv4Addr(127, 0, 0, 1), 3000);
+    let mut chain = ChainBuilder::new(echo_cookies);
+    let cookie_settings = CookieSettings { secret: None };
+    chain.link(persistent::Read::<CookieParser, CookieSettings>::both(cookie_settings));
+
+    Iron::new(chain).listen(Ipv4Addr(127, 0, 0, 1), 3000);
+    println!("Server listening on 3000!");
 }
 
-fn echo_cookies(req: &mut Request, _: &mut Response) -> Status {
-    let cookie = req.alloy.find::<Cookie>().unwrap();
-    for (key, value) in cookie.map.iter() {
-        println!("{}:\t{}", *key, *value)
-    }
-    Continue
+fn echo_cookies(req: &mut Request) -> IronResult<Response> {
+    let cookie = req.get::<CookieParser>();
+    match cookie {
+        Some(cookie) => println!("{}", cookie.map),
+        None => (),
+    };
+    Ok(Response::new())
 }
 ```
 

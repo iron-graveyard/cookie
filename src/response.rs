@@ -1,7 +1,7 @@
 //! Setting functionality - set cookie data
 
 use url::{utf8_percent_encode, FORM_URLENCODED_ENCODE_SET};
-use serialize::json::{Json, Number, String, Boolean, List, Object, Null};
+use serialize::json::{Json, I64, U64, F64, String, Boolean, List, Object, Null};
 use iron::Response;
 use super::Cookie;
 use time::Tm;
@@ -81,7 +81,9 @@ fn stringify_json(json: &Json) -> String {
             let ary: Vec<String> = list.iter().map(stringify_json).collect();
             "[".to_string().append(ary.connect(",").as_slice()).append("]")
         },
-        Number(number) => number.to_string(),
+        I64(number) => number.to_string(),
+        U64(number) => number.to_string(),
+        F64(number) => number.to_string(),
         String(ref string) => "\"".to_string().append(string.as_slice()).append("\""),
         Boolean(true)      => "true".to_string(),
         Boolean(false)     => "false".to_string(),
